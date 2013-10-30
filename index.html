@@ -4,17 +4,22 @@
     <meta charset="UTF-8">
     <title>Linear Regression</title>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-    <script type="text/javascript" src="math.min.js"></script>
+    <script type="text/javascript" src="flot.js"></script>
     <script type="text/javascript" src="machinelearning.js"></script>
 </head>
 
 <body>
-    <label>Enter function for recognition</label>
-    <input type="text" name="func-init" id="func-init"><br>
+    <h4>Enter function for recognition</h4>
+    <input type="radio" name="func-init" val="func-init1"> y(x) = cos(2*pi*x) <br>
+    <input type="radio" name="func-init" val="func-init2"> 2 <br>
+    <input type="radio" name="func-init" val="func-init3"> 3 <br>
     <label>Count of points</label>
     <input type="text" name="points" id="points"><br>
+    <label>Degree of polinom</label>
+    <input type="text" name="polinom" id="polinom"><br>
     <input type="submit" value="Submit" id="btn-submit">
     
+    <div class="graph" style="width:1000px;height:600px;"></div>
    
     
     <div class="wrap"></div>
