@@ -1,5 +1,6 @@
 $(document).ready( function() {
     
+/*************** GRAPH ***************/
     var board = JXG.JSXGraph.initBoard('box', {boundingbox:[-1,3,2,-3], axis:true});
     var f, curve; // global objects
     
@@ -24,6 +25,8 @@ $(document).ready( function() {
       ], 
       {fontSize:15});
 };
+/**********************************************************/
+    
     
     var y_init1 = function(x) {
         return Math.cos(2*Math.PI*x);
@@ -45,6 +48,9 @@ $(document).ready( function() {
         for (var i=0; i<=M; i++)
             res += w[i]*Math.pow(x, i);
     };
+    
+    /****************************************************/
+    
 
     $('#btn-submit').on('click', function(e) {
         e.preventDefault(); 
@@ -52,7 +58,7 @@ $(document).ready( function() {
         var n = Number($('#points').val());
         var M = Number($('#polinom').val());
         var x = values(n); // array of X with noise
-        
+        console.log('x ',x);
         var A = new Array (n);
         for(var i = 0; i < n; i++)
           A[i] = new Array(M+1);
@@ -62,16 +68,16 @@ $(document).ready( function() {
                 A[i][j] = Math.pow(x[i], j);
         console.log(A);
         if (y_init=='cos(2*PI*x)') {
-            var y = new Array (M+1);    
-            for (var i=0; i<=M; i++) 
-                y[i] = Array(n);
+            var y = new Array (n);    
+            for (var i=0; i<n; i++) 
+                y[i] = Array(M+1);
             
-            for (var i=0; i<=M; i++) 
+            for (var i=0; i<n; i++) 
                 y[i][0] = y_init1( x[i] );
-            for (var i=1; i<=M; i++)
-                for (var j=0; j<n; j++)
+            for (var i=0; i<n; i++)
+                for (var j=1; j<=M; j++)
                     y[i][j] = 0;
-        }
+        } console.log("y", y); 
         
         if (y_init=='func-init2') {
             var y = new Array (n);    
@@ -85,11 +91,12 @@ $(document).ready( function() {
                 y[i] = y_init3( x[i] );
         }
        
-        var At = transposeMatrix(A);
-        var AA = matrixMultiply(inverseMatrix(matrixMultiply(At,A)),At)
-        var w = matrixMultiply(AA,y);
-        
-       //var w = Gauss(A, y, M, n); 
+        // w = (At*A)^(-1)*(At*y)
+        var At = transposeMatrix(A); console.log('At ',At);
+        var AA = inverseMatrix(matrixMultiply(At,A)); console.log('AA ',AA);
+        var Aty = matrixMultiply(At,y); console.log('Aty ',Aty);
+        var w = matrixMultiply(AA,Aty); console.log('w ',w);
+
             
        var res = '';
        for (var i=0; i<=M; i++)
@@ -104,6 +111,7 @@ $(document).ready( function() {
    
 });
     
+
 
 var add = function (a, b) {
     var len = a.length;
