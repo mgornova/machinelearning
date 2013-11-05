@@ -1,7 +1,7 @@
 $(document).ready( function() {
     
 /*************** GRAPH ***************/
-    var board = JXG.JSXGraph.initBoard('box', {boundingbox:[-1,3,2,-3], axis:true});
+    var board = JXG.JSXGraph.initBoard('box', {boundingbox:[-1,12,2,-3], axis:true});
     var f, curve; // global objects
     
     function plotter(y_init) {
@@ -32,14 +32,29 @@ $(document).ready( function() {
         return Math.cos(2*Math.PI*x);
     };
     
-    var noise = function() {
-        return Math.random()*0.2; // noise in [0, 0.2)
+    var y_init2 = function(x) {
+        return 5*Math.pow(x,3)+Math.pow(x,2)+5;
     };
     
-    var values = function (n) {  // array of X with noise
-        var val = new Array ();
-        for (var i=0; i<n; i++)
-            val[i] = Math.random() + noise();
+    var y_init3 = function(x) {
+        return x*Math.sin(2*Math.PI*x);
+    };
+    
+    var noise = function() {
+        return Math.random()*0.1; // noise in [0, 0.2)
+    };
+    
+    var values = function (n) {  // array of X with normal distribution N(1/2,1/2)
+        var val = new Array (n);
+        var tmp = new Array (12);
+        for (var i=0; i<n; i++) {
+            val[i]=0;
+            for (var j=0; j<12; j++) {
+                tmp[j] = Math.random();
+                val[i] += tmp[j];
+            }
+            val[i] = 0.25*(val[i]-6)+0.5;
+        }
         return val;
     };
     
@@ -66,44 +81,57 @@ $(document).ready( function() {
         for (var i=0; i<n; i++)
             for (var j=0; j<=M; j++)
                 A[i][j] = Math.pow(x[i], j);
-        console.log(A);
+
         if (y_init=='cos(2*PI*x)') {
             var y = new Array (n);    
             for (var i=0; i<n; i++) 
                 y[i] = Array(M+1);
             
             for (var i=0; i<n; i++) 
-                y[i][0] = y_init1( x[i] );
+                y[i][0] = y_init1( x[i] ) + noise();
             for (var i=0; i<n; i++)
                 for (var j=1; j<=M; j++)
                     y[i][j] = 0;
-        } console.log("y", y); 
+        } 
         
-        if (y_init=='func-init2') {
+        if (y_init=='5*x^3+x^2+5') {
             var y = new Array (n);    
             for (var i=0; i<n; i++) 
-                y[i] = y_init2( x[i] );
+                y[i] = Array(M+1);
+            
+            for (var i=0; i<n; i++) 
+                y[i][0] = y_init2( x[i] ) + noise();
+            for (var i=0; i<n; i++)
+                for (var j=1; j<=M; j++)
+                    y[i][j] = 0;
         }
         
-        if (y_init=='func-init3') {
+        if (y_init=='x*sin(2*PI*x)') {
             var y = new Array (n);    
             for (var i=0; i<n; i++) 
-                y[i] = y_init3( x[i] );
+                y[i] = Array(M+1);
+            
+            for (var i=0; i<n; i++) 
+                y[i][0] = y_init3( x[i] ) + noise();
+            for (var i=0; i<n; i++)
+                for (var j=1; j<=M; j++)
+                    y[i][j] = 0;
         }
        
         // w = (At*A)^(-1)*(At*y)
-        var At = transposeMatrix(A); console.log('At ',At);
-        var AA = inverseMatrix(matrixMultiply(At,A)); console.log('AA ',AA);
-        var Aty = matrixMultiply(At,y); console.log('Aty ',Aty);
-        var w = matrixMultiply(AA,Aty); console.log('w ',w);
+        var At = transposeMatrix(A);
+        var AA = InverseMatrix2(matrixMultiply(At,A)); 
+        var Aty = matrixMultiply(At,y); 
+        var w = matrixMultiply(AA,Aty); 
 
             
        var res = '';
        for (var i=0; i<=M; i++)
           res += w[i][0]+'*x^'+i+'+';
        $('.res').text('Polinom f(x,w) = '+res.slice(0, -1));
+        $('.array-x').text('Array of X: '+ x);
         
-        plotter(y_init);
+        plotter(y_init, {strokecolor:'black'});
         plotter(res.slice(0, -1));
         
         

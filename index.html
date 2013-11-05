@@ -3,26 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>Linear Regression</title>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.js"></script>
     <script type="text/javascript" src="graph.js"></script>
     <script type="text/javascript" src="algebra.js"></script>
     <script type="text/javascript" src="machinelearning.js"></script>
 </head>
 
-<body>
+<body style="line-height:200%;">
     <h4>Enter function for recognition</h4>
-    <input type="radio" name="func-init" val="cos(2*PI*x)"> y(x) = cos(2*pi*x) <br>
-    <input type="radio" name="func-init" val="func-init2"> 2 <br>
-    <input type="radio" name="func-init" val="func-init3"> 3 <br>
+    <input type="radio" id="func1" name="func-init" val="cos(2*PI*x)"> <label for="func1">y(x) = cos(2*pi*x)</label> <br>
+    <input type="radio" id="func2" name="func-init" val="5*x^3+x^2+5">  <label for="func2">y(x) = 5*x^3 + x^2 + 5</label> <br>
+    <input type="radio" id="func3" name="func-init" val="x*sin(2*PI*x)">  <label for="func3">y(x) = x*sin(2*pi*x)</label> <br>
     <label>Count of points</label>
     <input type="text" name="points" id="points"><br>
     <label>Degree of polinom</label>
     <input type="text" name="polinom" id="polinom"><br>
     <input type="submit" value="Submit" id="btn-submit">
     
+    <div class="array-x"></div>
     <div class="res"></div>
     
-    <div id="box" class="box" style="width: 600px; height: 600px; overflow: hidden; position: relative;"></div>
+    <div id="box" class="box" style="width: 600px; height: 800px; overflow: hidden; position: relative;"></div>
    
     
     <div class="wrap"></div>
