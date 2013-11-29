@@ -41,27 +41,30 @@ $(document).ready( function() {
     };
     
     var noise = function() {
-        return Math.random()*0.1; // noise in [0, 0.2)
+        var res = 0;
+        var tmp = new Array (12);
+        for (var j=0; j<12; j++) {
+            tmp[j] = Math.random();
+            res += tmp[j];
+        }
+            res = 0.0001*(res-6)+0.01;
+        
+        return res; // noise in [0, 0.2) with normal distribution N(0.01,0.01)
     };
     
-    var values = function (n) {  // array of X in ascending order with normal distribution N(1/2,1/2)
+    var values = function (n) {  // array of X in ascending order 
         var val = new Array (n);
-        var tmp = new Array (12);
-        for (var i=0; i<n; i++) {
-            val[i]=0;
-            for (var j=0; j<12; j++) {
-                tmp[j] = Math.random();
-                val[i] += tmp[j];
-            }
-            val[i] = 0.25*(val[i]-6)+0.5;
-        }
+        for (var i=0; i<n; i++)
+            val[i] = Math.random();
+        
+        
         return val.sort(function(a,b){return a - b});
     };
     
     var polinom = function (x, w, M) {  // w is array
-        var res = 0;
+        var res = 0; 
         for (var i=0; i<=M; i++)
-            res += w[i]*Math.pow(x, i);
+            res += w[i][0]*Math.pow(x[0], i);
         return res;
     };
     
@@ -136,7 +139,7 @@ $(document).ready( function() {
         
         
         /******************** Cross Validation **************************/
-        var tbl = "<table>";
+        var tbl = "<table border=1>";
         var E = new Array (8);
         for (var i=0; i<8; i++) 
             E[i] = new Array (n);
@@ -155,11 +158,11 @@ $(document).ready( function() {
                 var A2 = new Array (n-1);
                 for(var i = 0; i < n-1; i++)
                   A2[i] = new Array(Mi+1);
-        
+       
                 for (var i=0; i<n-1; i++)
                     for (var j=0; j<=Mi; j++)
                         A2[i][j] = Math.pow(x[i], j);
-        
+       
                 if (y_init=='cos(2*PI*x)') {
                     var y3 = new Array (n-1);    
                     for (var i=0; i<n-1; i++) 
@@ -170,7 +173,7 @@ $(document).ready( function() {
                     for (var i=0; i<n-1; i++)
                         for (var j=1; j<=Mi; j++)
                             y3[i][j] = 0;
-                    
+                  
                     var y_cut = y_init1( cut ); 
                 } 
                 
@@ -195,7 +198,7 @@ $(document).ready( function() {
                     
                     for (var i=0; i<n-1; i++) 
                         y3[i][0] = y_init3( xi[i] ) + noise();
-                    for (var i=0; i<n; i++)
+                    for (var i=0; i<n-1; i++)
                         for (var j=1; j<=Mi; j++)
                             y3[i][j] = 0;
                     
@@ -205,16 +208,37 @@ $(document).ready( function() {
                 // w = (At*A)^(-1)*(At*y)
                 var At4 = transposeMatrix(A2);
                 var AA5 = InverseMatrix2(matrixMultiply(At4,A2)); 
-                var Aty = matrixMultiply(At4,y3); 
-                var wi = matrixMultiply(AA5,Aty); 
-                console.log("wi = ", wi);
-                E[Mi][i] = ( polinom(cut,wi,Mi)-y_cut )*( polinom(cut,wi,Mi)-y_cut ); //console.log(" E[Mi][i] = ",  E[Mi][i]);
-                 tbl += "<td> E["+Mi+"]["+i+"]" + E[Mi][i] + "</td>";
+                var Aty6 = matrixMultiply(At4,y3); 
+                var wi = matrixMultiply(AA5,Aty6);
+               
+                E[Mi-2][k] = ( polinom(cut,wi,Mi)-y_cut )*( polinom(cut,wi,Mi)-y_cut ); 
+                 tbl += "<td> E["+ Mi +"]["+k+"] " + E[Mi-2][k] + "</td>";
             }
-            tbl += "</tr>";  //console.log(tbl);
+            tbl += "</tr>";  
         }
         tbl += "</table>"; 
+        
+        var htm = '', 
+            htm2 = '';
+        var Emiddle = new Array(n),
+            Emin = new Array(8);
+        
+        for (var Mi=2; Mi<=9; Mi++) {
+            Emiddle[Mi-2] = 0;
+            for (var k=0; k<n; k++) {
+                Emiddle[Mi-2] += E[Mi-2][k];
+            }
+            Emiddle[Mi-2] /= n;
+            htm += "<p> Emiddle["+Mi+"] "+ Emiddle[Mi-2] + "</p>";
+        console.log('Mi', Mi);
+            E[Mi-2] = E[Mi-2].sort(function(a,b){return a - b});
+            Emin[Mi-2] = E[Mi-2][0]; console.log('Emin', Emin[Mi-2]);
+        }
+        Emin = Emin.sort(function(a,b){return a - b});
+        
         $(".cv").html(tbl);
+        $(".cv_res1").html(htm);
+        $(".cv_res2").html("<p>E minimum = "+Emin[0]+"</p>");
         /****************************************************************/
         
     });
@@ -279,7 +303,7 @@ var Gauss = function(a, b, M, n) {
         //делим i-е уравнение на a[i][j]
         for (var l = j+1; l < M+1; ++l) {
             a[i][l] /= a[i][j];
-        } console.log(a[i][j]); console.log(b[i]);
+        } 
         b[i] /= a[i][j];
         a[i][j] = 1;
         //путём элементарных преобразований обнулить
