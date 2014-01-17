@@ -244,3 +244,13 @@ function InverseMatrix2(A)   // Обратная матрица
      { for (var j = 0; j<N; j++) A[i][j] /= det; }
     return A;
 }
+
+function MultMatrVect (A/*matrix*/, b/*vector*/, N) {
+    var res = [];
+    for (var i=0; i<N; i++) {
+        res[i] = 0;
+        for (var j = 0; j<N; j++) {
+            res[i] += A[i][j]*b[j];
+        }
+    }
+}

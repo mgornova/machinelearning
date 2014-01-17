@@ -1,6 +1,6 @@
 $(document).ready( function() {
     
-/*************** GRAPH ***************/
+/*********************** GRAPH ***********************/
     var board = JXG.JSXGraph.initBoard('box', {boundingbox:[-1,12,2,-3], axis:true});
     var f, curve; // global objects
     
@@ -56,17 +56,24 @@ $(document).ready( function() {
         var val = new Array (n);
         for (var i=0; i<n; i++)
             val[i] = Math.random();
-        
-        
+    
         return val.sort(function(a,b){return a - b});
     };
     
-    var polinom = function (x, w, M) {  // w is array
+    var polinom = function (x/*array*/, w/*array*/, M) {  
         var res = 0; 
         for (var i=0; i<=M; i++)
             res += w[i][0]*Math.pow(x[0], i);
         return res;
     };
+    
+    var sum = function (x/*array*/, n) { //sum X of degree n
+        var res = 0; 
+        var len = x.length;
+        for (var i=0; i<len; i++)
+            res += Math.pow(x[i], n);
+        return res;
+    }
     
     /****************************************************/
 
@@ -74,63 +81,52 @@ $(document).ready( function() {
         e.preventDefault(); 
         var y_init = $("input[name='func-init']:checked").attr('val'); 
         var n = Number($('#points').val());
-        var M = Number($('#polinom').val());
+        var M = Number($('#polinom').val())+1;
         var x = values(n); 
+        var w = new Array(M);
+        var b = new Array(M); // right part
+                
+        var A = new Array (M);
+        for(var i = 0; i < M; i++)
+          A[i] = new Array(M);
 
-        var A = new Array (n);
-        for(var i = 0; i < n; i++)
-          A[i] = new Array(M+1);
-
-        for (var i=0; i<n; i++)
-            for (var j=0; j<=M; j++)
-                A[i][j] = Math.pow(x[i], j);
-
+        
+        for (var i=0; i<M; i++)
+            for (var j=0; j<M; j++)
+                A[i][j] = sum(x, i+j);
+console.log('*** A = ', A)
+        var A_1 = InverseMatrix2(A);
+        
         if (y_init=='cos(2*PI*x)') {
             var y = new Array (n);    
-            for (var i=0; i<n; i++) 
-                y[i] = Array(M+1);
             
             for (var i=0; i<n; i++) 
-                y[i][0] = y_init1( x[i] ) + noise();
-            for (var i=0; i<n; i++)
-                for (var j=1; j<=M; j++)
-                    y[i][j] = 0;
+                y[i] = y_init1( x[i] ) + noise();
         } 
         
         if (y_init=='5*x^3+x^2+5') {
             var y = new Array (n);    
+           
             for (var i=0; i<n; i++) 
-                y[i] = Array(M+1);
-            
-            for (var i=0; i<n; i++) 
-                y[i][0] = y_init2( x[i] ) + noise();
-            for (var i=0; i<n; i++)
-                for (var j=1; j<=M; j++)
-                    y[i][j] = 0;
+                y[i] = y_init2( x[i] ) + noise();
         }
         
         if (y_init=='x*sin(2*PI*x)') {
             var y = new Array (n);    
+           
             for (var i=0; i<n; i++) 
-                y[i] = Array(M+1);
-            
-            for (var i=0; i<n; i++) 
-                y[i][0] = y_init3( x[i] ) + noise();
-            for (var i=0; i<n; i++)
-                for (var j=1; j<=M; j++)
-                    y[i][j] = 0;
+                y[i] = y_init3( x[i] ) + noise();
         }
+        
+        for(var i = 0; i < M; i++)
+            for(var j = 0; j < n; j++)
+                b[i] = Math.pow(x[j], i)*y[j];
        
-        // w = (At*A)^(-1)*(At*y)
-        var At = transposeMatrix(A);
-        var AA = InverseMatrix2(matrixMultiply(At,A)); 
-        var Aty = matrixMultiply(At,y); 
-        var w = matrixMultiply(AA,Aty); 
-
+       w = MultMatrVect(A_1, b, M);  console.log('****', w);
             
        var res = '';
-       for (var i=0; i<=M; i++)
-          res += w[i][0]+'*x^'+i+'+';
+       for (var i=0; i<M; i++)
+          res += w[i]+'*x^'+i+'+';
        $('.res').text('Polinom f(x,w) = '+res.slice(0, -1));
         $('.array-x').text('Array of X : '+ x);
         
@@ -138,7 +134,7 @@ $(document).ready( function() {
         plotter(res.slice(0, -1));
         
         
-        /******************** Cross Validation **************************/
+        /******************** Cross Validation **************************
         var tbl = "<table border=1>";
         var E = new Array (8);
         for (var i=0; i<8; i++) 
@@ -238,7 +234,7 @@ $(document).ready( function() {
         
         $(".cv").html(tbl);
         $(".cv_res1").html(htm);
-        $(".cv_res2").html("<p>E minimum = "+Emin[0]+"</p>");
+        $(".cv_res2").html("<p>E minimum = "+Emin[0]+"</p>");      */
         /****************************************************************/
         
     });
