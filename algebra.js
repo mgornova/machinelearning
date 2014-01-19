@@ -253,4 +253,5 @@ function MultMatrVect (A/*matrix*/, b/*vector*/, N) {
             res[i] += A[i][j]*b[j];
         }
     }
+    return res;
 }

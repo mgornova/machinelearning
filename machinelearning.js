@@ -60,10 +60,10 @@ $(document).ready( function() {
         return val.sort(function(a,b){return a - b});
     };
     
-    var polinom = function (x/*array*/, w/*array*/, M) {  
+    var polinom = function (x/*array 1 element*/, w/*array*/, M) {  
         var res = 0; 
         for (var i=0; i<=M; i++)
-            res += w[i][0]*Math.pow(x[0], i);
+            res += w[i]*Math.pow(x[0], i);
         return res;
     };
     
@@ -94,9 +94,10 @@ $(document).ready( function() {
         for (var i=0; i<M; i++)
             for (var j=0; j<M; j++)
                 A[i][j] = sum(x, i+j);
-console.log('*** A = ', A)
+//console.log('*** A = ', A);
         var A_1 = InverseMatrix2(A);
-        
+//console.log('*** A_1 = ', A_1);
+//console.log('*** A*A_1 = ', matrixMultiply(A,A_1));        
         if (y_init=='cos(2*PI*x)') {
             var y = new Array (n);    
             
@@ -118,11 +119,13 @@ console.log('*** A = ', A)
                 y[i] = y_init3( x[i] ) + noise();
         }
         
-        for(var i = 0; i < M; i++)
+        for(var i = 0; i < M; i++) {
+            b[i] = 0;
             for(var j = 0; j < n; j++)
-                b[i] = Math.pow(x[j], i)*y[j];
-       
-       w = MultMatrVect(A_1, b, M);  console.log('****', w);
+                b[i] += Math.pow(x[j], i)*y[j];
+        }
+       //console.log('**** b = ', b);
+       w = MultMatrVect(A_1, b, M);  //console.log('****', w);
             
        var res = '';
        for (var i=0; i<M; i++)
@@ -134,78 +137,66 @@ console.log('*** A = ', A)
         plotter(res.slice(0, -1));
         
         
-        /******************** Cross Validation **************************
+        /******************** Cross Validation **************************/
         var tbl = "<table border=1>";
         var E = new Array (8);
         for (var i=0; i<8; i++) 
             E[i] = new Array (n);
         
         for (var Mi=2; Mi<=9; Mi++) {
-
+console.log('****** Степень полинома ******', Mi);
             tbl += "<tr>"; 
             for (var k=0; k<n; k++) {
               
                 var xi = new Array (n);
+                var b2 = new Array (Mi+1);
                 for (var j=0; j<n; j++) 
                     xi[j]= x[j];
 
                 var cut = xi.splice(k,1); 
                 
-                var A2 = new Array (n-1);
-                for(var i = 0; i < n-1; i++)
+                var A2 = new Array (Mi+1);
+                for(var i = 0; i <= Mi; i++)
                   A2[i] = new Array(Mi+1);
        
-                for (var i=0; i<n-1; i++)
+                for (var i=0; i<=Mi; i++)
                     for (var j=0; j<=Mi; j++)
-                        A2[i][j] = Math.pow(x[i], j);
+                        A2[i][j] = sum(xi, i+j); console.log('** A2 = ', A2);
+                var A2_1 = InverseMatrix2(A2); console.log('** A2_1 = ', A2_1);
        
                 if (y_init=='cos(2*PI*x)') {
                     var y3 = new Array (n-1);    
+            
                     for (var i=0; i<n-1; i++) 
-                        y3[i] = Array(Mi+1);
-                    
-                    for (var i=0; i<n-1; i++) 
-                        y3[i][0] = y_init1( xi[i] ) + noise();
-                    for (var i=0; i<n-1; i++)
-                        for (var j=1; j<=Mi; j++)
-                            y3[i][j] = 0;
+                        y3[i] = y_init1( xi[i] ) + noise();
                   
-                    var y_cut = y_init1( cut ); 
+                    var y_cut = y_init1( cut[0] ); 
                 } 
                 
                 if (y_init=='5*x^3+x^2+5') {
                     var y3 = new Array (n-1);    
+            
                     for (var i=0; i<n-1; i++) 
-                        y3[i] = Array(Mi+1);
+                        y3[i] = y_init1( xi[i] ) + noise();
                     
-                    for (var i=0; i<n-1; i++) 
-                        y3[i][0] = y_init2( xi[i] ) + noise();
-                    for (var i=0; i<n-1; i++)
-                        for (var j=1; j<=Mi; j++)
-                            y3[i][j] = 0;
-                    
-                    var y_cut = y_init2( cut );
+                    var y_cut = y_init2( cut[0] );
                 }
                 
                 if (y_init=='x*sin(2*PI*x)') {
                     var y3 = new Array (n-1);    
+            
                     for (var i=0; i<n-1; i++) 
-                        y3[i] = Array(Mi+1);
+                        y3[i] = y_init1( xi[i] ) + noise();
                     
-                    for (var i=0; i<n-1; i++) 
-                        y3[i][0] = y_init3( xi[i] ) + noise();
-                    for (var i=0; i<n-1; i++)
-                        for (var j=1; j<=Mi; j++)
-                            y3[i][j] = 0;
-                    
-                    var y_cut = y_init3( cut );
+                    var y_cut = y_init3( cut[0] );
                 }
 
-                // w = (At*A)^(-1)*(At*y)
-                var At4 = transposeMatrix(A2);
-                var AA5 = InverseMatrix2(matrixMultiply(At4,A2)); 
-                var Aty6 = matrixMultiply(At4,y3); 
-                var wi = matrixMultiply(AA5,Aty6);
+                for(var i = 0; i <= Mi; i++) {
+                    b2[i] = 0;
+                    for(var j = 0; j < n-1; j++)
+                        b2[i] += Math.pow(xi[j], i)*y[j];
+                } console.log('** b = ', b);
+                var wi = MultMatrVect(A2_1, b2, Mi+1); console.log('**** wi = ', wi);
                
                 E[Mi-2][k] = ( polinom(cut,wi,Mi)-y_cut )*( polinom(cut,wi,Mi)-y_cut ); 
                  tbl += "<td> E["+ Mi +"]["+k+"] " + E[Mi-2][k] + "</td>";
@@ -234,7 +225,7 @@ console.log('*** A = ', A)
         
         $(".cv").html(tbl);
         $(".cv_res1").html(htm);
-        $(".cv_res2").html("<p>E minimum = "+Emin[0]+"</p>");      */
+        $(".cv_res2").html("<p>E minimum = "+Emin[0]+"</p>");      
         /****************************************************************/
         
     });
