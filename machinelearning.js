@@ -5,6 +5,7 @@ $(document).ready( function() {
     var f, curve; // global objects
     
     function plotter(y_init) {
+  alert('Are you looking for new job position?y');
   var txtraw = y_init;
   f = board.jc.snippet(txtraw, true, 'x', true);
   curve = board.create('functiongraph',[f,
